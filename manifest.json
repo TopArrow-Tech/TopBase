@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "my-app",
+  "name": "App name",
+  "description": "One-line description",
+  "runtime": {
+    "type": "php",
+    "min_version": "8.3"
+  },
+  "database": {
+    "type": "sqlite"
+  },
+  "entry": {
+    "public_dir": "public",
+    "health": "/__health"
+  }
+}
