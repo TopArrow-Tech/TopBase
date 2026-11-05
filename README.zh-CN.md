@@ -6,6 +6,13 @@ TopBase 是在顶箭（TopArrow）上运行的应用的起步脚手架。它不�
 
 顶箭在用户自己的电脑上本地运行应用，内置 PHP、Node、Python、Electron 运行时，数据库只用 SQLite。
 
+## 获取顶箭
+
+顶箭支持 Windows 10 x64 及以上，以及 macOS 11 及以上的 Apple 芯片 Mac。
+
+- 官网：<https://www.toparrow.top/cn/>
+- 下载：<https://www.toparrow.top/cn/web/download.php>
+
 ## 目录内容
 
 ```text
@@ -41,7 +48,9 @@ TopBase 是在顶箭（TopArrow）上运行的应用的起步脚手架。它不�
 
 根目录的文件是英文，`lang/docs/zh/` 是中文版。顶箭在中文环境新建应用时，会用中文版替换 `AGENTS.md`、`_doc/`、`_aiact/`，并删掉 `lang/docs/`。
 
-手动使用时如果要中文：把 `lang/docs/zh/` 下的 `AGENTS.md`、`_doc/`、`_aiact/` 覆盖到根目录（`_doc/` 要整个替换，中英文版有几个目录名不同），再删掉 `lang/docs/`。
+`lang/docs/zh/manifest.json` 不是完整清单，顶箭只把其中的 `name` 和 `description` 合并进根目录的 `manifest.json`。
+
+手动使用时如果要中文：把 `lang/docs/zh/` 下的 `AGENTS.md`、`_doc/`、`_aiact/` 覆盖到根目录（`_doc/` 要整个替换，中英文版有几个目录名不同），需要的话把 `lang/docs/zh/manifest.json` 里的 `name`、`description` 填进根目录清单，再删掉 `lang/docs/`。
 
 ## 关于本仓库
 

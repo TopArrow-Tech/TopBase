@@ -13,15 +13,21 @@ Set `runtime.type` in `manifest.json` first. **Do not default to PHP.** If the u
 | **Python** | Scripts, data processing, and small local HTTP tools with a few third-party libraries. The platform provides the interpreter. Dependencies live in the app's own `vendor/`. |
 | **Electron** | Desktop capabilities such as system file dialogs, printing, or native windows. An ordinary web page or small game does not need Electron. |
 
-On Windows, PHP handles requests one at a time. A small game that pulls many assets on the first screen will stall, and tuning will not get around that.
+PHP handles requests one at a time. A small game that pulls many assets on the first screen will stall, and tuning will not get around that.
 A static site only needs a few dozen lines of Node to serve files.
 
 The `manifest.json` in this template is the PHP shape. For Node, Python, or Electron, replace `entry.public_dir` with `entry.main` (the js or py file to run, or the Electron app root).
 
 ## Finding TopArrow's Node, PHP, Python, and SQLite on this machine
 
+TopArrow runs on Windows 10 x64 and later, and on Macs with Apple silicon running macOS 11 or later. Follow the section for the system you are on.
+
 `node`, `php`, and `python` are usually **not** on the system PATH. Do not treat that as "not installed", and do not download another copy. Do not `npm install sqlite3` or `better-sqlite3`.
 TopArrow ships the runtimes. **Do not look them up on PATH.**
+
+The PowerShell, registry, and shell snippets below are for finding things on the development machine. The app itself must still follow "Windows and Mac" in `AGENTS.md`.
+
+### Windows
 
 The default install path is `C:\Program Files\TopArrow\`. The user may install on another drive (for example `D:\TopArrow`). Use the real install location on this machine. Do not hard-code `C:\Program Files`.
 
@@ -56,25 +62,68 @@ $node = Join-Path $root 'runtime\node\node.exe'
 
 Then use `$node`, not a `node` from the system. Next to it are `runtime\php\php.exe`, `runtime\python\python.exe`, `runtime\electron\electron.exe`, and `tactl.exe`. Self-check: `& (Join-Path $root 'tactl.exe') runtime`.
 
-SQLite is built into the runtimes. It is not a separate install:
-
-- Node: `DatabaseSync` from `require('node:sqlite')` (platform Node 24; no flag and no native module).
-- PHP: the `pdo_sqlite` and `sqlite3` extensions are already enabled.
-- Python: the standard-library `sqlite3` module (platform Python 3.13).
-
 Probe Node + SQLite (`$node` is the path found above):
 
 ```powershell
 & $node -e "const {DatabaseSync}=require('node:sqlite'); const db=new DatabaseSync(':memory:'); console.log(db.prepare('select sqlite_version() as v').get());"
 ```
 
-During development, run scripts with the `node.exe`, `php.exe`, or `python.exe` you found. When the app actually runs, TopArrow starts it and injects `TOPARROW_*`.
-User data still lives in `%LOCALAPPDATA%\TopArrow\`, no matter which drive the program is installed on.
+User data lives in `%LOCALAPPDATA%\TopArrow\`, no matter which drive the program is installed on.
+
+### macOS
+
+TopArrow is an app bundle, normally `/Applications/TopArrow.app`. The user may have moved it somewhere else (for example `~/Applications`). The program root is `TopArrow.app/Contents/Resources` (it contains `runtime/`).
+
+Find the program root in this order:
+
+1. The environment variable `TOPARROW_RUNTIME_DIR` (injected when TopArrow launches the app; its parent is the program root).
+2. If TopArrow is running, the path of its `TopArrow.app/Contents/MacOS/TopArrow` (or `TopArrowAgent`) process.
+3. If neither exists, try `/Applications/TopArrow.app` and `~/Applications/TopArrow.app`.
+
+```sh
+root=""
+if [ -n "$TOPARROW_RUNTIME_DIR" ]; then root="$(dirname "$TOPARROW_RUNTIME_DIR")"; fi
+if [ -z "$root" ]; then
+  exe="$(ps -axo comm= | grep -m1 -E '/TopArrow\.app/Contents/MacOS/TopArrow(Agent)?$')"
+  if [ -n "$exe" ]; then root="${exe%/MacOS/*}/Resources"; fi
+fi
+for app in /Applications/TopArrow.app "$HOME/Applications/TopArrow.app"; do
+  if [ -z "$root" ] && [ -d "$app/Contents/Resources/runtime" ]; then root="$app/Contents/Resources"; fi
+done
+node="$root/runtime/node/bin/node"
+```
+
+Then use `"$node"`, not a `node` from the system. The others are `runtime/php/bin/php`, `runtime/python/bin/python3`, and `runtime/electron/Electron.app/Contents/MacOS/Electron`. `tactl` sits next to the main program, not under the program root. Self-check: `"$root/../MacOS/tactl" runtime`.
+
+Probe Node + SQLite (`$node` is the path found above):
+
+```sh
+"$node" -e "const {DatabaseSync}=require('node:sqlite'); const db=new DatabaseSync(':memory:'); console.log(db.prepare('select sqlite_version() as v').get());"
+```
+
+User data lives in `~/Library/Application Support/TopArrow/`.
+
+### On both systems
+
+SQLite is built into the runtimes. It is not a separate install:
+
+- Node: `DatabaseSync` from `require('node:sqlite')` (platform Node 24; no flag and no native module).
+- PHP: the `pdo_sqlite` and `sqlite3` extensions are already enabled.
+- Python: the standard-library `sqlite3` module (platform Python 3.13).
+
+During development, run scripts with the Node, PHP, or Python you found. When the app actually runs, TopArrow starts it and injects `TOPARROW_*`.
+
+## Native modules
+
+Prefer pure-Python packages (wheels tagged `py3-none-any`) and npm packages without native addons. The same `vendor/` or `node_modules/` then works on Windows and on Mac.
+
+A package with native code only runs on the system it was built for: a Python wheel needs `cp313` + `win_amd64` on Windows and `cp313` + `macosx_11_0_arm64` on Mac, and a Node `.node` addon is the same. The platform does not split packages by system, so an app that ships one of these runs on one system only.
+Before adding one, tell the user, as "Windows and Mac" in `AGENTS.md` asks: say which system the app will be limited to, and offer a pure-Python or pure-JS alternative if there is one.
 
 ## Extra rules for Python
 
-- **Do not ship `python.exe`, and do not create a `.venv`.** Only the platform may provide the interpreter.
-- **The platform does not include pip.** On the development machine, run `pip install --target vendor <package>` and put the unpacked site-packages into `vendor/` at the app root. Do not drop raw `.whl` files in there.
-- Packages with native extensions must be `cp313` + `win_amd64` (built on Windows against this same Python 3.13). A wheel built for another platform will fail to import on the user's machine.
-- The platform starts the app as `python.exe -X utf8 -B toparrow_bootstrap.py <app root> <entry.main>`. Do not set `PYTHONPATH` yourself.
+- **Do not ship a Python interpreter (`python.exe`, `python3`), and do not create a `.venv`.** Only the platform may provide the interpreter.
+- **The platform does not include pip.** On the development machine, run `pip install --target vendor <package>` with a Python 3.13 pip, and put the unpacked site-packages into `vendor/` at the app root. Do not drop raw `.whl` files in there.
+- Packages with native extensions: see "Native modules" above.
+- The platform starts the app as `python.exe -X utf8 -B toparrow_bootstrap.py <app root> <entry.main>` on Windows and `python3 -I -X utf8 -B toparrow_bootstrap.py <app root> <entry.main>` on Mac. Do not set `PYTHONPATH` yourself.
 - After editing a `.py` file, stop briefly and start the app again. Do not add a bundler.

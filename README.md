@@ -6,6 +6,13 @@ TopBase is the starter scaffold for apps that run on TopArrow. It contains no ap
 
 TopArrow runs apps locally on the user's own computer. It ships PHP, Node, Python, and Electron runtimes, and SQLite is the only database.
 
+## Get TopArrow
+
+TopArrow runs on Windows 10 x64 and later, and on Macs with Apple silicon running macOS 11 or later.
+
+- Website: <https://www.toparrow.top/>
+- Download: <https://www.toparrow.top/web/download.php>
+
 ## What's inside
 
 ```text
@@ -41,7 +48,9 @@ TopArrow runs apps locally on the user's own computer. It ships PHP, Node, Pytho
 
 The files at the root are in English. `lang/docs/zh/` holds the Chinese version. When TopArrow creates an app in a Chinese environment, it replaces `AGENTS.md`, `_doc/`, and `_aiact/` with the Chinese copies and removes `lang/docs/`.
 
-To do the same by hand, copy `AGENTS.md`, `_doc/`, and `_aiact/` from `lang/docs/zh/` over the ones at the root (replace `_doc/` as a whole, since some folder names differ), then delete `lang/docs/`.
+`lang/docs/zh/manifest.json` is not a full manifest. TopArrow only copies its `name` and `description` into the root `manifest.json`.
+
+To do the same by hand, copy `AGENTS.md`, `_doc/`, and `_aiact/` from `lang/docs/zh/` over the ones at the root (replace `_doc/` as a whole, since some folder names differ), take `name` and `description` from `lang/docs/zh/manifest.json` if you want them, then delete `lang/docs/`.
 
 ## About this repository
 

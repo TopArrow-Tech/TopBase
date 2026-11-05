@@ -56,7 +56,7 @@ When you discuss requirements, ask the user about these. Do not decide for them:
 - Do not commit secrets, temporary probes (files under `_aiact/` that should be deleted when done), upload directories, or other unrelated or sensitive files. Ask the user if you are unsure.
 - Do not change git config, except filling in this repository's missing commit identity as `git.md` describes. Do not use `--no-verify`, force push, or amend unless the user explicitly asks and the safety rules allow it.
 - If the repository has no `git init` yet, initialize it and make the first commit.
-- If `git` cannot be found on this machine, use the git that ships with TopArrow. Do not skip the commit, and do not install git. Where it is, how to use it, and how to fill in a missing user name or email: see `/_doc/aicode/rules/git.md`.
+- Use the git that ships with TopArrow first. Use the system `git` only when TopArrow is not installed on this machine. Do not skip the commit, and do not install git. Where TopArrow's git is, how to use it, and how to fill in a missing user name or email: see `/_doc/aicode/rules/git.md`.
 
 # `_doc` layout
 Project notes live under `/_doc/`:
