@@ -26,6 +26,7 @@ The platform tells the app where to run through environment variables. **Do not 
 # Confirming requirements with the user
 When you discuss requirements, ask the user about these. Do not decide for them:
 - Whether the app needs both Chinese and English. If it does, keep UI text in language files instead of hard-coding it in pages.
+- Which color scheme the interface should use. Do not pick one yourself. The usual AI palettes all look the same, so offer several clearly different options and wait for the user to choose before building the UI.
 - For a small game: whether to disable the right-click menu.
 
 # Windows and Mac
